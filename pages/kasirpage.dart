@@ -196,8 +196,6 @@ class _KasirState extends State<Kasir> {
     );
   }
 
-  /// 🔧 buildCart: sekarang aman dipanggil di dalam Expanded (landscape)
-  /// maupun di dalam ListView (portrait, draggable sheet).
   Widget buildCart({bool isInScrollable = false}) {
     Widget listContent;
     if (cartItems.isEmpty) {
@@ -209,7 +207,7 @@ class _KasirState extends State<Kasir> {
     } else {
       final listView = ListView.builder(
         padding: EdgeInsets.zero,
-        shrinkWrap: isInScrollable, // true kalau dipakai dalam scroll parent
+        shrinkWrap: isInScrollable, 
         physics: isInScrollable
             ? const NeverScrollableScrollPhysics()
             : const AlwaysScrollableScrollPhysics(),
@@ -235,8 +233,6 @@ class _KasirState extends State<Kasir> {
         },
       );
 
-      // landscape → pakai Expanded
-      // portrait → biarkan biasa (karena parent sudah scrollable)
       listContent = isInScrollable ? listView : Expanded(child: listView);
     }
 
@@ -350,7 +346,7 @@ class _KasirState extends State<Kasir> {
             return Row(
               children: [
                 Expanded(flex: 3, child: menuArea),
-                Expanded(flex: 1, child: buildCart()), // ⬅️ landscape
+                Expanded(flex: 1, child: buildCart()),
               ],
             );
           } else {
@@ -390,7 +386,7 @@ class _KasirState extends State<Kasir> {
                             child: ListView(
                               controller: scrollController,
                               children: [
-                                buildCart(isInScrollable: true), // ⬅️ portrait
+                                buildCart(isInScrollable: true), 
                               ],
                             ),
                           ),
