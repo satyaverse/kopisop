@@ -1,3 +1,4 @@
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../widgets/drawer.dart';
@@ -98,176 +99,192 @@ class _KasirState extends State<Kasir> {
 
   /// 🔹 Dialog checkout (nama, status bayar, jumlah dibayar)
   void _checkout() {
-  if (cartItems.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Keranjang masih kosong')),
-    );
-    return;
-  }
+    if (cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keranjang masih kosong')),
+      );
+      return;
+    }
 
-  final buyerController = TextEditingController();
-  final bayarController = TextEditingController();
-  String statusBayar = "lunas"; // default
+    final buyerController = TextEditingController();
+    final bayarController = TextEditingController();
+    String statusBayar = "lunas"; // default
 
-  showDialog(
-    context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setStateDialog) {
-        return AlertDialog(
-          title: const Text("Proses Transaksi ?"),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: buyerController,
-                  decoration: const InputDecoration(
-                    labelText: "Nama Pembeli",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: "lunas",
-                          groupValue: statusBayar,
-                          activeColor: Colors.green, // warna radio
-                          onChanged: (value) {
-                            setStateDialog(() {
-                              statusBayar = value!;
-                              bayarController.text = total.toInt().toString();
-                            });
-                          },
-                        ),
-                        const Text(
-                          "Lunas",
-                          style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text("Proses Transaksi ?"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: buyerController,
+                    decoration: const InputDecoration(
+                      labelText: "Nama Pembeli",
+                      border: OutlineInputBorder(),
                     ),
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: "belum",
-                          groupValue: statusBayar,
-                          activeColor: Colors.red, // warna radio
-                          onChanged: (value) {
-                            setStateDialog(() {
-                              statusBayar = value!;
-                              bayarController.clear();
-                            });
-                          },
-                        ),
-                        const Text(
-                          "Belum Lunas",
-                          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-                TextField(
-                  controller: bayarController,
-                  enabled: statusBayar == "belum", // 🔹 disabled kalau lunas
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Jumlah Dibayar",
-                    border: OutlineInputBorder(),
                   ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
-            TextButton(
-              onPressed: () async {
-                final int totalInt = total.toInt();
-                final navigator = Navigator.of(context);
-                final messenger = ScaffoldMessenger.of(context);
-
-                final bayar = statusBayar == "lunas"
-                    ? totalInt
-                    : int.tryParse(bayarController.text) ?? 0;
-
-                // 🔹 Validasi
-                if (statusBayar == "belum" && (bayar <= 0 || bayar > totalInt)) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        bayar <= 0
-                            ? "Jumlah dibayar harus diisi"
-                            : "Jumlah dibayar tidak boleh lebih dari total",
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          Radio<String>(
+                            value: "lunas",
+                            groupValue: statusBayar,
+                            activeColor: Colors.green,
+                            onChanged: (value) {
+                              setStateDialog(() {
+                                statusBayar = value!;
+                                bayarController.text =
+                                    total.toInt().toString();
+                              });
+                            },
+                          ),
+                          const Text(
+                            "Lunas",
+                            style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 2),
+                      Row(
+                        children: [
+                          Radio<String>(
+                            value: "belum",
+                            groupValue: statusBayar,
+                            activeColor: Colors.red,
+                            onChanged: (value) {
+                              setStateDialog(() {
+                                statusBayar = value!;
+                                bayarController.clear();
+                              });
+                            },
+                          ),
+                          const Text(
+                            "Belum Lunas",
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: bayarController,
+                    enabled: statusBayar == "belum",
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Jumlah Dibayar",
+                      border: OutlineInputBorder(),
                     ),
-                  );
-                  return;
-                }
-
-                // 🔹 tampilkan loading
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator()),
-                );
-
-                final result = await DBHelper().saveCompleteTransaction(
-                  cartItems,
-                  totalInt,
-                  buyerName: buyerController.text,
-                  status: statusBayar,
-                  dibayar: bayar,
-                );
-
-                // tutup loading
-                navigator.pop();
-
-                if (!mounted) return;
-
-                if (result > 0) {
-                  setState(() {
-                    cartItems.clear();
-                    total = 0.0;
-                  });
-
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text("Transaksi Berhasil"),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-
-                  navigator.pop(); // tutup dialog checkout
-                } else {
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text("Transaksi Gagal"),
-                      backgroundColor: Colors.red,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-              child: const Text("Bayar"),
+                  ),
+                ],
+              ),
             ),
-          ],
-        );
-      },
-    ),
-  );
-}
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Batal"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final int totalInt = total.toInt();
+                  final navigator = Navigator.of(context);
+                  final messenger = ScaffoldMessenger.of(context);
 
+                  final bayar = statusBayar == "lunas"
+                      ? totalInt
+                      : int.tryParse(bayarController.text) ?? 0;
+
+                  // Validasi nama pembeli
+                  if (buyerController.text.trim().isEmpty) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text("Nama pembeli tidak boleh kosong"),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Validasi jumlah bayar
+                  if (statusBayar == "belum" &&
+                      (bayar < 0 || bayar > totalInt)) {
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          bayar <= 0
+                              ? "Jumlah dibayar harus diisi"
+                              : "Jumlah dibayar tidak boleh lebih dari total",
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Loading
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) =>
+                        const Center(child: CircularProgressIndicator()),
+                  );
+
+                  final result = await DBHelper().saveCompleteTransaction(
+                    cartItems,
+                    totalInt,
+                    buyerName: buyerController.text,
+                    status: statusBayar,
+                    dibayar: bayar,
+                  );
+
+                  navigator.pop(); // tutup loading
+
+                  if (!mounted) return;
+
+                  if (result > 0) {
+                    setState(() {
+                      cartItems.clear();
+                      total = 0.0;
+                    });
+
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text("Transaksi Berhasil"),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    navigator.pop(); // tutup dialog checkout
+                  } else {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text("Transaksi Gagal"),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                child: const Text("Bayar"),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   /// 🔹 Dialog pilih qty
   void _showQtyDialog(Map<String, dynamic> item) {
@@ -285,7 +302,8 @@ class _KasirState extends State<Kasir> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.remove_circle, color: Colors.red),
+                    icon:
+                        const Icon(Icons.remove_circle, color: Colors.red),
                     onPressed: () {
                       if (qty > 1) {
                         qty--;
@@ -310,7 +328,8 @@ class _KasirState extends State<Kasir> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.add_circle, color: Colors.green),
+                    icon:
+                        const Icon(Icons.add_circle, color: Colors.green),
                     onPressed: () {
                       qty++;
                       qtyController.text = qty.toString();
@@ -362,7 +381,8 @@ class _KasirState extends State<Kasir> {
                 height: 150,
                 width: double.infinity,
                 color: Colors.grey[200],
-                child: imagePath.isNotEmpty && File(imagePath).existsSync()
+                child: imagePath.isNotEmpty &&
+                        File(imagePath).existsSync()
                     ? Image.file(
                         File(imagePath),
                         height: 120,
@@ -389,7 +409,8 @@ class _KasirState extends State<Kasir> {
                   Text(
                     "Rp ${price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}",
                     style: const TextStyle(
-                        color: Colors.brown, fontWeight: FontWeight.w500),
+                        color: Colors.brown,
+                        fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
